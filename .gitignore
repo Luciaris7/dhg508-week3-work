@@ -1,4 +1,1 @@
-# 生成的数据库与中间产物（不要提交）
-*.db
-*.db-journal
-records.json
+# 生成的数据库与中间产物现按需提交（history.db、records.json 已纳入版本控制）
