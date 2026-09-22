@@ -27,12 +27,28 @@ description: 从泰坦尼克号（1912）史实库 history.db 作答。默认以
   | `source` | 出处（材料名 + 章节 + 原文行号） |
   | `note` | 存疑、冲突、来源质量 |
 
+- 另有表：`images`，共 **6 行**，每行一张公共领域史实图片（本地副本在 `sources/raw/images/`）。
+- 列：
+
+  | 列 | 含义 |
+  |---|---|
+  | `id` | 图片行号，引用时用它 |
+  | `file` | 本地文件名（`sources/raw/images/`） |
+  | `caption` | 题注 |
+  | `author` | 作者 / 拍摄者 |
+  | `date` | 拍摄或刊登日期 |
+  | `license` | 许可 |
+  | `commons_url` | Wikimedia Commons 来源 |
+  | `related_events` | 相关 `events` 行号，分号分隔 |
+  | `note` | 存疑、冲突 |
+
 - 卷宗取材于两份公共领域原始材料：
   1. 英国沉船调查委员会报告《Loss of the Steamship "Titanic"》(1912)，Gutenberg #39415（31 行）；
   2. 幸存者 Lawrence Beesley《The Loss of the S. S. Titanic》(1912)，Gutenberg #6675（5 行）。
 - 卷上有的：船舶规格、航线、船员与乘客人数、航速与气象、撞击与沉没的时刻与位置、
-  救生艇、Carpathia 救援、Californian 见死不救、调查庭的裁决。
-- 卷上没有的：1985 年残骸发现、影视作品、票价、绝大多数乘客个人生平、船员的完整名单。
+  救生艇、Carpathia 救援、Californian 见死不救、调查庭的裁决；以及 6 张史实图片之登记（`images` 表）。
+- 卷上没有的：1985 年残骸发现、影视作品、票价、绝大多数乘客个人生平、船员的完整名单；
+  除 `images` 表所登记的 6 张外，卷宗不藏其他图片。
 
 ## 数据使用规则（硬性）
 
@@ -43,6 +59,9 @@ description: 从泰坦尼克号（1912）史实库 history.db 作答。默认以
 4. **存疑照转。** 遇到 `note` 里的冲突或不确定，原样转述，不替材料选一个答案。
 5. **能自证出处。** 至少给出 `[id]`；被追问时给出该行 `source` 字段全文；
    必要时可引用原始材料中对应的原文行（用 `source` 里的 `L123-145` 定位）。
+6. **论及图片时，只认 `images` 表。** 图片之题注、作者、日期、许可、来源与相关 `events` 行号，
+   均取自该表；引用图片行用 `[img id]`。表中无载之图，即答「这本卷宗里没有」。
+   图片题注与图面所见如有出入，见该行 `note`，照转不隐。
 
 ## 语气与行为
 
@@ -71,6 +90,13 @@ for r in conn.execute(
     ("%救生艇%", "%救生艇%"),
 ):
     print(r["id"], r["date"], r["event"], r["source"])
+
+for r in conn.execute(
+    "SELECT id, file, caption, author, date, license, commons_url, "
+    "related_events, note FROM images WHERE caption LIKE ? OR note LIKE ?",
+    ("%救生艇%", "%救生艇%"),
+):
+    print("[img %d]" % r["id"], r["caption"], r["commons_url"])
 ```
 
 ## 问答示例
@@ -79,6 +105,11 @@ for r in conn.execute(
 答：据卷，全船共 20 艘救生艇——14 艘木制救生艇（各载 65 人）、2 艘应急艇（各载 40 人）、
 4 艘 Engelhardt 折叠艇（各载 47 人），总容量 1,178 人。[5]
 （出处：Gutenberg #39415，§I "Lifeboats"，L1360-1381。注：总容量远少于船上 2,201 人。）
+
+**问：卷中有无救生艇相关之图片？**
+答：卷上有图一张：`carpathia-with-titanic-lifeboats-1912.jpg`，题注「泰坦尼克号救生艇靠泊
+Carpathia 号，1912-04-18」，The New York Times，Public domain，相关 `events` 行 5、23、26。[img 4]
+（注：题注与图面所见似有出入——图面为夜色中救生艇仍悬于吊艇架之上，照转存疑。）
 
 **问：沉船残骸是哪一年被发现的？**
 答：这本卷宗里没有。卷宗只到 1912 年的调查，不含后世打捞或残骸发现的记录。

@@ -249,6 +249,76 @@ ROWS = [
 ]
 
 
+IMAGES = [
+    {
+        "id": 1,
+        "file": "rms-titanic-departing-southampton-1912-04-10.jpg",
+        "caption": "泰坦尼克号 1912 年 4 月 10 日自南安普敦启航",
+        "author": "F. G. O. Stuart",
+        "date": "1912",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:RMS_Titanic_3.jpg",
+        "related_events": "6;33",
+        "note": "",
+    },
+    {
+        "id": 2,
+        "file": "titanic-and-olympic-under-construction-belfast.jpg",
+        "caption": "泰坦尼克号与奥林匹克号在贝尔法斯特 Harland & Wolff 船厂建造中，约 1910",
+        "author": "Robert Welch",
+        "date": "约 1910",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:Construction_of_Titanic_and_Olympic.jpg",
+        "related_events": "1;32",
+        "note": "",
+    },
+    {
+        "id": 3,
+        "file": "iceberg-near-titanic-wreck-site-1912.jpg",
+        "caption": "沉没地点附近的一座冰山，1912-12-14",
+        "author": "Louis Ogden / NARA",
+        "date": "1912-12-14",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:A_Photograph_of_an_Iceberg_Floating_Near_the_Site_of_the_TITANIC_Sinking._-_NARA_-_278334.jpg",
+        "related_events": "15;16",
+        "note": "照片拍摄于沉没八个月之后，非失事当时之冰山",
+    },
+    {
+        "id": 4,
+        "file": "carpathia-with-titanic-lifeboats-1912.jpg",
+        "caption": "泰坦尼克号救生艇靠泊 Carpathia 号，1912-04-18",
+        "author": "The New York Times",
+        "date": "1912-04-18",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:Carpathia_-_Titanic_lifeboats.jpg",
+        "related_events": "5;23;26",
+        "note": "题注作「靠泊 Carpathia 号」，然图面所见为夜色中救生艇仍悬于吊艇架之上，题注与图面似有出入，并存待考",
+    },
+    {
+        "id": 5,
+        "file": "titanic-survivors-aboard-carpathia-1912.jpg",
+        "caption": "获救者聚集于 Carpathia 号甲板，1912",
+        "author": "Bain News Service",
+        "date": "1912",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:Survivors_of_TITANIC_on_CARPATHIA_LCCN2014691298.jpg",
+        "related_events": "23;27",
+        "note": "",
+    },
+    {
+        "id": 6,
+        "file": "titanic-paperboy-ned-parfett-1912.jpg",
+        "caption": "报童 Ned Parfett 举「泰坦尼克号沉没」号外，1912-04-16",
+        "author": "佚名",
+        "date": "1912-04-16",
+        "license": "Public domain",
+        "commons_url": "https://commons.wikimedia.org/wiki/File:Titanic_paperboy_crop.jpg",
+        "related_events": "19;31",
+        "note": "",
+    },
+]
+
+
 def write_records():
     path = os.path.join(ROOT, "records.json")
     with open(path, "w", encoding="utf-8") as f:
@@ -279,15 +349,36 @@ def build_db():
         "VALUES (:id, :year, :date, :event, :place, :people, :source, :note)",
         ROWS,
     )
+    cur.execute("""
+        CREATE TABLE images (
+            id             INTEGER PRIMARY KEY,
+            file           TEXT NOT NULL,
+            caption        TEXT,
+            author         TEXT,
+            date           TEXT,
+            license        TEXT,
+            commons_url    TEXT,
+            related_events TEXT,
+            note           TEXT
+        )
+    """)
+    cur.executemany(
+        "INSERT INTO images (id, file, caption, author, date, license, "
+        "commons_url, related_events, note) "
+        "VALUES (:id, :file, :caption, :author, :date, :license, "
+        ":commons_url, :related_events, :note)",
+        IMAGES,
+    )
     conn.commit()
     n = cur.execute("SELECT COUNT(*) FROM events").fetchone()[0]
+    m = cur.execute("SELECT COUNT(*) FROM images").fetchone()[0]
     conn.close()
-    return db_path, n
+    return db_path, n, m
 
 
 if __name__ == "__main__":
     r = write_records()
-    db, n = build_db()
+    db, n, m = build_db()
     print("records.json ->", r)
     print("history.db   ->", db)
-    print("rows inserted:", n)
+    print("rows inserted:", n, "events,", m, "images")
