@@ -59,9 +59,11 @@ def original(source):
 def act1():
     banner("第 1 幕 · 数据从哪来")
     print("原始材料（sources/raw/，未改动）:")
-    for name in sorted(os.listdir(os.path.join(ROOT, "sources", "raw"))):
-        p = os.path.join(ROOT, "sources", "raw", name)
-        print("  %-52s %6.1f KB" % (name, os.path.getsize(p) / 1024))
+    raw_dir = os.path.join(ROOT, "sources", "raw")
+    for name in sorted(os.listdir(raw_dir)):
+        p = os.path.join(raw_dir, name)
+        if os.path.isfile(p):
+            print("  %-52s %6.1f KB" % (name, os.path.getsize(p) / 1024))
     print("\n中间产物与数据库:")
     for rel in ("records.json", "history.db"):
         p = os.path.join(ROOT, rel)
