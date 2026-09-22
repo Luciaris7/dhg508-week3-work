@@ -1,0 +1,4 @@
+# 生成的数据库与中间产物（不要提交）
+*.db
+*.db-journal
+records.json
