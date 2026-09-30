@@ -1,1 +1,14 @@
-# 生成的数据库与中间产物现按需提交（history.db、records.json 已纳入版本控制）
+# history.db and records.json are small and reproducible, so they stay tracked.
+# rebuild with: python code/build_db.py
+
+# secrets / local env
+.env
+*.key
+
+# python
+__pycache__/
+*.pyc
+
+# OS
+Thumbs.db
+desktop.ini

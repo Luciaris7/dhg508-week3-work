@@ -1,6 +1,6 @@
-"""课堂演示一键脚本：从原始材料 → 数据库 → agent 回答证据。
+"""课堂演示一键脚本：原始材料 → 关系数据库 → agent 回答证据。
 
-用法：
+用法:
     python code/demo_run.py            # 跑全程
     python code/demo_run.py 1          # 只跑第 1 幕
 """
@@ -15,13 +15,12 @@ sys.stdout.reconfigure(encoding="utf-8")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB = os.path.join(ROOT, "history.db")
 RAW = {
-    "39415": os.path.join(
-        ROOT, "sources", "raw",
-        "british-inquiry-1912-loss-of-steamship-titanic.txt"),
-    "6675": os.path.join(
-        ROOT, "sources", "raw",
-        "beesley-1912-loss-of-ss-titanic.txt"),
+    1: os.path.join(ROOT, "sources", "raw",
+                    "british-inquiry-1912-loss-of-steamship-titanic.txt"),
+    2: os.path.join(ROOT, "sources", "raw",
+                    "beesley-1912-loss-of-ss-titanic.txt"),
 }
+TABLES = ["sources", "places", "people", "events", "event_people", "images", "image_events"]
 
 
 def banner(title):
@@ -38,78 +37,79 @@ def rows(sql, args=()):
     return out
 
 
-def print_rows(rs):
-    for r in rs:
-        print("  [%d] %s" % (r["id"], r["event"]))
-        print("      出处 " + r["source"])
-        if r["note"]:
-            print("      备注 " + r["note"])
-
-
-def original(source):
-    book = re.search(r"#(39415|6675)", source)
-    span = re.search(r"L(\d+)-(\d+)", source)
-    if not book or not span:
+def original(source_id, locator):
+    m = re.match(r"L(\d+)-(\d+)$", locator or "")
+    if not m or source_id not in RAW:
         return None
-    with open(RAW[book.group(1)], encoding="utf-8") as f:
+    with open(RAW[source_id], encoding="utf-8") as f:
         lines = f.readlines()
-    return "".join(lines[int(span.group(1)) - 1:int(span.group(2))]).rstrip()
+    return "".join(lines[int(m.group(1)) - 1:int(m.group(2))]).rstrip()
 
 
 def act1():
-    banner("第 1 幕 · 数据从哪来")
+    banner("第 1 幕 · 数据从哪来（关系型，有约束）")
     print("原始材料（sources/raw/，未改动）:")
-    raw_dir = os.path.join(ROOT, "sources", "raw")
-    for name in sorted(os.listdir(raw_dir)):
-        p = os.path.join(raw_dir, name)
+    for name in sorted(os.listdir(os.path.join(ROOT, "sources", "raw"))):
+        p = os.path.join(ROOT, "sources", "raw", name)
         if os.path.isfile(p):
             print("  %-52s %6.1f KB" % (name, os.path.getsize(p) / 1024))
-    print("\n中间产物与数据库:")
-    for rel in ("records.json", "history.db"):
-        p = os.path.join(ROOT, rel)
-        print("  %-52s %6.1f KB" % (rel, os.path.getsize(p) / 1024))
-    conn = sqlite3.connect(DB)
-    n = conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]
-    schema = conn.execute(
-        "SELECT sql FROM sqlite_master WHERE name='events'").fetchone()[0]
-    conn.close()
-    print("\nevents 表（共 %d 行）:" % n)
-    print(schema)
+    print("\n数据库 history.db（7 表，外键开启）:")
+    total = 0
+    for t in TABLES:
+        n = rows("SELECT COUNT(*) AS n FROM %s" % t)[0]["n"]
+        total += n
+        print("  %-14s %4d rows" % (t, n))
+    print("  %-14s %4d rows" % ("TOTAL", total))
+    print("\n表结构（以 events 为例）:")
+    print(rows("SELECT sql FROM sqlite_master WHERE name='events'")[0][0])
 
 
 def act2():
-    banner("第 2 幕 · 只有查库才答得出的三个问题")
-    qs = [
-        ("问一：救生艇一共能载多少人？够不够全船用？",
-         "SELECT * FROM events WHERE event LIKE '%救生艇%' ORDER BY id"),
-        ("问二：Californian 号为什么没来救援？",
-         "SELECT * FROM events WHERE event LIKE '%Californian%' "
-         "OR people LIKE '%Stanley Lord%' ORDER BY id"),
-        ("问三：Beesley 与官方报告在时间和人数上有何出入？",
-         "SELECT * FROM events WHERE id IN (15,23,27,31,33,34) ORDER BY id"),
-    ]
-    for title, sql in qs:
-        print("\n--- " + title)
-        print_rows(rows(sql))
+    banner("第 2 幕 · 跨表问答：只有查库才答得出")
+    print("\n问一：Californian 号的船长是谁？当晚他做了什么？")
+    for r in rows("""
+        SELECT e.id, e.event, s.code, e.locator
+        FROM event_people ep
+        JOIN events e ON e.id = ep.event_id
+        JOIN people p ON p.id = ep.person_id
+        JOIN sources s ON s.id = e.source_id
+        WHERE p.name_normalized LIKE 'Lord, Stanley%' ORDER BY e.id"""):
+        print("  [%d] %s  (%s %s)" % (r["id"], r["event"], r["code"], r["locator"]))
+
+    print("\n问二：为什么救生艇总容量够、却少救那么多人？")
+    for r in rows("""
+        SELECT id, event, source_id, locator FROM events
+        WHERE id IN (5,26,27,57,58,59) ORDER BY id"""):
+        print("  [%d] %s" % (r["id"], r["event"]))
+
+    print("\n问三：Californian 号与泰坦尼克号是什么关系？")
+    for r in rows("""
+        SELECT e.id, e.event, s.code FROM events e
+        JOIN sources s ON s.id = e.source_id
+        WHERE e.id IN (24,94) ORDER BY e.id"""):
+        print("  [%d] %s  (%s)" % (r["id"], r["event"], r["code"]))
 
 
 def act3():
     banner("第 3 幕 · 反证：库外问题必须拒答")
     print("问：沉船残骸是哪一年被发现？（库中只到 1912 年）")
-    for kw in ("%1985%", "%残骸%", "%发现%"):
-        rs = rows("SELECT * FROM events WHERE event LIKE ?", (kw,))
-        print("  查询 %-8s -> 命中 %d 行" % (kw, len(rs)))
-    print("  => 0 行。agent 应回答：『这本卷宗里没有。』")
+    for kw in ("%1985%", "%残骸%", "%wreck%", "%discovered%"):
+        rs = rows("SELECT id FROM events WHERE event LIKE ?", (kw,))
+        print("  查询 %-14s -> 命中 %d 行" % (kw, len(rs)))
+    print("  => 全为 0 行。agent 应回答：『这本卷宗里没有。』")
 
 
 def act4():
-    banner("第 4 幕 · 逐字回溯原文")
-    r = rows("SELECT * FROM events WHERE id=24")[0]
+    banner("第 4 幕 · 逐字回溯原文（quote 自动核对）")
+    r = rows("""SELECT e.*, s.code FROM events e
+                JOIN sources s ON s.id=e.source_id WHERE e.id=24""")[0]
     print("数据库 [%d]: %s" % (r["id"], r["event"]))
-    print("出处: " + r["source"])
+    print("出处: %s, %s" % (r["code"], r["locator"]))
     print("-" * 78)
-    print("Gutenberg #39415 原文:")
-    print(original(r["source"]))
+    print("来源 %s 原文:" % r["code"])
+    print(original(r["source_id"], r["locator"]))
+    print("-" * 78)
+    print("本行 quote 是否出现在原文:", r["quote"] in original(r["source_id"], r["locator"]))
 
 
 ACTS = {"1": act1, "2": act2, "3": act3, "4": act4}

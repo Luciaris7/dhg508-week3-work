@@ -1,0 +1,15 @@
+[
+  {"image_id": 1, "event_id": 6, "note": ""},
+  {"image_id": 1, "event_id": 33, "note": ""},
+  {"image_id": 2, "event_id": 1, "note": ""},
+  {"image_id": 2, "event_id": 32, "note": ""},
+  {"image_id": 3, "event_id": 15, "note": ""},
+  {"image_id": 3, "event_id": 16, "note": ""},
+  {"image_id": 4, "event_id": 5, "note": ""},
+  {"image_id": 4, "event_id": 23, "note": ""},
+  {"image_id": 4, "event_id": 26, "note": ""},
+  {"image_id": 5, "event_id": 23, "note": ""},
+  {"image_id": 5, "event_id": 27, "note": ""},
+  {"image_id": 6, "event_id": 19, "note": ""},
+  {"image_id": 6, "event_id": 31, "note": ""}
+]

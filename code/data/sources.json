@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "code": "GB39415",
+    "title": "Loss of the Steamship \"Titanic\" (British Wreck Commissioner's Inquiry Report)",
+    "author": "British Wreck Commissioner's Court (Lord Mersey)",
+    "year": 1912,
+    "publisher": "Project Gutenberg eBook #39415",
+    "gutenberg_id": 39415,
+    "url": "https://www.gutenberg.org/ebooks/39415",
+    "local_path": "sources/raw/british-inquiry-1912-loss-of-steamship-titanic.txt",
+    "note": "官方一手材料；正文以文本行号 L… 定位，非纸本页码。"
+  },
+  {
+    "id": 2,
+    "code": "BE6675",
+    "title": "The Loss of the S. S. Titanic: Its Story and Its Lessons",
+    "author": "Lawrence Beesley (survivor)",
+    "year": 1912,
+    "publisher": "Project Gutenberg eBook #6675",
+    "gutenberg_id": 6675,
+    "url": "https://www.gutenberg.org/ebooks/6675",
+    "local_path": "sources/raw/beesley-1912-loss-of-ss-titanic.txt",
+    "note": "幸存者回忆录；文本行号同上，属亲历叙述，数字与官方报告有出入。"
+  },
+  {
+    "id": 3,
+    "code": "COMMONS",
+    "title": "Wikimedia Commons image records (public domain)",
+    "author": "Various (see images.author)",
+    "year": 1912,
+    "publisher": "Wikimedia Commons",
+    "gutenberg_id": null,
+    "url": "https://commons.wikimedia.org",
+    "local_path": "sources/raw/images/",
+    "note": "仅用于图片行；每张图以 Commons 文件页为 locator。"
+  }
+]

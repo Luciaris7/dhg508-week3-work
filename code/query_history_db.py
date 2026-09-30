@@ -1,3 +1,5 @@
+"""Print the schema, table sizes and a joined sample of history.db."""
+
 import os
 import sqlite3
 import sys
@@ -10,25 +12,31 @@ DB = os.path.join(ROOT, "history.db")
 conn = sqlite3.connect(DB)
 conn.row_factory = sqlite3.Row
 
-print("== schema ==")
-for row in conn.execute("SELECT sql FROM sqlite_master WHERE type='table'"):
-    print(row[0])
+print("== tables ==")
+for row in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type IN ('table','view') ORDER BY name"):
+    print("  " + row[0])
 
-total = conn.execute("SELECT COUNT(*) FROM events").fetchone()[0]
-print("\n== %d rows in events ==" % total)
-print("%-3s %-8s %-26s %-7s %s" % ("id", "year", "date", "people", "event"))
+print("\n== row counts ==")
+tables = ["sources", "places", "people", "events", "event_people", "images", "image_events"]
+total = 0
+for t in tables:
+    n = conn.execute("SELECT COUNT(*) FROM %s" % t).fetchone()[0]
+    total += n
+    print("  %-14s %4d" % (t, n))
+print("  %-14s %4d" % ("TOTAL", total))
+
+print("\n== v_events_full (first 15) ==")
+print("%-3s %-6s %-10s %-12s %s" % ("id", "year", "date", "source", "event"))
 print("-" * 100)
-for r in conn.execute("SELECT * FROM events ORDER BY id"):
-    people = (r["people"] or "")[:24]
-    event = r["event"]
-    print("%-3d %-8s %-26s %-7s %s" % (r["id"], r["year"], r["date"], people, event))
+for r in conn.execute("SELECT * FROM v_events_full ORDER BY id LIMIT 15"):
+    print("%-3d %-6s %-10s %-12s %s"
+          % (r["id"], r["year"], r["date_normalized"] or "", r["source"], r["event"]))
 
-print("\n== 出处分布 ==")
-for src, n in conn.execute(
-    "SELECT CASE WHEN source LIKE '%#39415%' THEN 'British Inquiry (#39415)' "
-    "WHEN source LIKE '%#6675%' THEN 'Beesley (#6675)' ELSE 'other' END AS s, "
-    "COUNT(*) FROM events GROUP BY s"
-):
-    print("  %-28s %d" % (src, n))
+print("\n== 按来源统计 events ==")
+for r in conn.execute(
+        "SELECT s.code, COUNT(*) n FROM events e JOIN sources s ON s.id=e.source_id "
+        "GROUP BY s.code ORDER BY n DESC"):
+    print("  %-10s %d" % (r["code"], r["n"]))
 
 conn.close()
