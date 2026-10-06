@@ -11,8 +11,8 @@
 ## 先决条件
 
 ```powershell
-# 1) 会用到上级目录里 Week 3 的卷宗与脚本（本文件夹不改动它们）
-Test-Path ..\history.db          # True
+# 1) 会用到 ..\week3&4\ 里 Week 3 的卷宗与脚本（本文件夹不改动它们）
+Test-Path ..\week3&4\history.db  # True
 python --version                 # Python 3，只要标准库，无需 pip install
 
 # 2) 注册一个 DeepSeek API key（https://platform.deepseek.com/api_keys），只放在环境变量里。
@@ -70,8 +70,8 @@ python code\check_deepseek.py        # 用你的 key 发一次真实调用，确
 
 ## 与 Week 3 的关系
 
-- 卷宗本体、原始材料、构建与校验脚本**都留在原处**：`..\history.db`、`..\code\build_db.py`、
-  `..\code\validate_db.py`、`..\sources\raw\`。本文件夹只读取，不修改。
+- 卷宗本体、原始材料、构建与校验脚本**都留在原处**：`..\week3&4\history.db`、`..\week3&4\code\build_db.py`、
+  `..\week3&4\code\validate_db.py`、`..\week3&4\sources\raw\`。本文件夹只读取，不修改。
 - 本文件夹是**新增**的：Week 3 的东西一个字节都没动（`git log` 里可以看到只多了这个目录）。
 - skill 从 Week 3 的「一份长 SKILL.md + 三份 reference」重构成「**一份索引 + 三份按职责分开的文档**」。
 

@@ -30,7 +30,7 @@ python app\server.py                # 启动服务器（保持这个窗口开着
 |---|---|
 | 系统 | Windows（用户环境变量的写法是 Windows 的） |
 | Python | 3.8 或更新（本机实测 3.14.7）；**只用标准库，不需要 pip install** |
-| 卷宗 | 上级目录的 `..\history.db`（7 表 223 行），由 Week 3 生成，本文件夹不改它 |
+| 卷宗 | `..\week3&4\history.db`（7 表 223 行），由 Week 3 生成，本文件夹不改它 |
 | 网络 | 只有"真模型"模式需要；离线替身模式完全离线 |
 | 密钥 | 只有"真模型"模式需要，见 §2 |
 
@@ -157,10 +157,10 @@ python code\check_app.py                               # 自检 67 项（不联�
 python code\check_deepseek.py                          # 一次最小调用
 python code\check_deepseek.py --ask "到底救了多少人？"    # 完整两步流水线
 
-# 卷宗（Week 3 的脚本，在本文件夹的上级目录）
-python ..\code\build_db.py                             # 从 data/*.json 重建
-python ..\code\validate_db.py                          # 引文回原文 + 外键校验
-python ..\code\verify_sample.py                        # 随机 20 行对照原文
+# 卷宗（Week 3 的脚本，在 ..\week3&4\ 里）
+python ..\week3&4\code\build_db.py                      # 从 data/*.json 重建
+python ..\week3&4\code\validate_db.py                   # 引文回原文 + 外键校验
+python ..\week3&4\code\verify_sample.py                 # 随机 20 行对照原文
 ```
 
 ---
@@ -192,7 +192,7 @@ python ..\code\verify_sample.py                        # 随机 20 行对照原�
 | 500 `SQLite refused the query` | 模型写的列名/表名不存在 | 重问一次；这属于检索层失败，见 `questions.md` 第 2 条 |
 | 端口被占用 | 8000 被别的程序占了 | `$env:WEEK5_PORT = "8765"` 后重启 |
 | 控制台中文乱码 | PowerShell 5.1 默认 cp936 | 一般不用管（脚本会自适应）；实在乱就先 `chcp 65001` |
-| 改了数据但页面还是旧行 | 没重建数据库 | 跑 `python ..\code\build_db.py`（应用每次请求都重新只读打开卷宗，不必重启服务器） |
+| 改了数据但页面还是旧行 | 没重建数据库 | 跑 `python ..\week3&4\code\build_db.py`（应用每次请求都重新只读打开卷宗，不必重启服务器） |
 
 ### 7.3 想确认"到底谁在答"
 
@@ -218,9 +218,9 @@ python ..\code\verify_sample.py                        # 随机 20 行对照原�
 
 完整步骤在 [`skills/mersey-clerk/maintenance.md`](skills/mersey-clerk/maintenance.md)，速记：
 
-1. 新来源登记进 `..\code\data\sources.json`，原文逐字放进 `..\sources\raw\`（不改原文）；
-2. 新建 `..\code\data\events_03_<来源>.json`（`events_` 前缀会被自动合并），每条都要有
+1. 新来源登记进 `..\week3&4\code\data\sources.json`，原文逐字放进 `..\week3&4\sources\raw\`（不改原文）；
+2. 新建 `..\week3&4\code\data\events_03_<来源>.json`（`events_` 前缀会被自动合并），每条都要有
    `id`（最大 + 1，不复用）、`source_id`、`locator`、`quote`（能在原文逐字命中）、`note`；
-3. 重建与校验：`python ..\code\build_db.py` → `validate_db.py` → `verify_sample.py`。
+3. 重建与校验：`python ..\week3&4\code\build_db.py` → `validate_db.py` → `verify_sample.py`。
 
 **应用与数据是解耦的**：不用改一行代码，也不用重启服务器，刷新页面就能查到新行。

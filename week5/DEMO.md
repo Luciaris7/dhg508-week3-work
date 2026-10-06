@@ -7,30 +7,46 @@
 
 ## 课前 2 分钟
 
-```powershell
-chcp 65001                          # 中文乱码时才需要（PowerShell 5.1 默认 cp936）
-cd "C:\Users\28301\Desktop\dhg508 week3\week5"
-
-python code\set_key.py --verify     # 粘贴密钥（不回显）→ 存进环境变量 → 立刻真调用验证一次
-python code\check_app.py            # 应打印「通过 67 项，失败 0 项」
-python app\server.py                # 横幅应写 model deepseek-flash
-```
-
-`set_key.py --verify` 跑通就说明第 ① 条"答一个**真**请求"已经成立；
-它失败时会明确告诉你是 401（抄错）还是 402（余额不足）。
-
-横幅是第一个卖点，念出来：
+**双击 `启动网页.bat`** 就行。它会自己读密钥、起服务器、等服务器真的应答之后再打开
+浏览器。黑窗口里应该出现：
 
 ```
-  archive   ...\dhg508 week3\history.db  (223 rows)
+  [OK] Key loaded.
+  [..] Starting the server in this window.
+```
+
+服务器横幅必须是这两行：
+
+```
+  archive   ...\week3&4\history.db  (223 rows)
   model     deepseek-flash  (DEEPSEEK_API_KEY found)      ← 有密钥时
   model     offline fixture (not a model)                 ← 没密钥时会写这句
 ```
 
-**掉链子预案**：网络不通就把 `$env:WEEK5_MODE` 设成 `fixture` 重开，
+**看到 `offline fixture` 就要当场修，别等到台上**：说明没读到密钥。
+确认一下环境，再重来一次：
+
+```powershell
+python code\set_key.py --check      # 只看现状
+python code\check_app.py            # 应打印「通过 67 项，失败 0 项」
+```
+
+课前收尾：把要展示的两道题**先各点一次**（这样答案已在页面上，网络抖动也不怕），
+并提前开好第 2、3 幕的文件（见各幕）。
+
+**掉链子预案**：网络不通就按 `Ctrl+C` 停掉，然后在同一个窗口里设：
+
+```powershell
+$env:WEEK5_MODE = "fixture"
+python app\server.py
+```
+
 页面会亮黄条明说"回答来自预设答案，不是模型"——**念出来，这本身就是演示内容**。
 断网时真正能救场的正是那条黄条：它证明这个应用不会假装。
-（`WEEK5_MODE=fixture` 需在**同一个窗口**里设，再启动服务器。）
+（`WEEK5_MODE` 需在**同一个窗口**里设，再启动服务器。）
+
+> **演示前不要换密钥。** 轮换密钥是好事，但请在演示前一天做完；
+> 现场换密钥是唯一能让演示直接崩掉的操作。
 
 ---
 
@@ -40,10 +56,10 @@ python app\server.py                # 横幅应写 model deepseek-flash
 2. 点示例题「加州人号（Californian）的船长是谁？当晚他做了什么？」→ 呈上问题。
 3. 结果出来后，**从上往下**讲：
 
-   - **结论条**："卷宗有此记载，查得 7 行"——先说清是有据还是拒答。
-   - **回答**："船长 **Stanley Lord** [24]；该船属 Leyland 公司、6,223 总吨，
-     属 IMM，与泰坦尼克同一母公司 [94]；晚 7:30 报冰情 [95]；10:20 因浮冰停车，
-     所报位置被法庭判为不准确 [96]；约 11 时见来船而船长不在驾驶台 [97]；
+   - **结论条**："卷宗有此记载，查得 9 行"——先说清是有据还是拒答。
+   - **回答**："船长 **Stanley Lord** [94][24]；该船属 Leyland 公司、由伦敦驶往波士顿、
+     6,223 总吨，船上仅 1 名 Marconi 电报员且其时已睡 [24]；晚 7:30 报冰情 [95]；
+     10:20 因浮冰停车，所报位置被法庭判为不准确 [96]；约 11 时见来船而船长不在驾驶台 [97]；
      12:30–1:40 见 8 枚火箭未施救，法庭裁定本可赶到 [25][30]。"
      念一句关键的："**这些行号，通用知识给不出来。**"
    - **依据表**："这是唯一允许它使用的材料——回答里每一句都在这张表里。"
@@ -51,30 +67,47 @@ python app\server.py                # 横幅应写 model deepseek-flash
      然后**真的**在 1912 年卷宗上跑了。"
    - **页脚**："两次调用、耗时、tokens，都在这儿。"
 
-4. 再点「泰坦尼克号残骸是哪一年被发现的？」——**0 行**：
-   "这本卷宗里没有。它没有给我 1985 那个年份，因为卷宗只到 1912 年 7 月。"
+4. 再点「泰坦尼克号残骸是哪一年被发现的？」。真模型实测的答案（逐字）：
+
+   > **这本卷宗里没有。**
+   > 原因：卷宗所载仅至 1912 年 7 月调查庭结束之时，泰坦尼克号残骸的发现不在其记录范围之内；
+   > 本次检索仅得一行，且该行所记为 1912 年 4 月 14 日夜瞭望员发现冰山、发出警报及转舵碰撞的
+   > 经过 [85]，与残骸发现无涉。
+
+   看点：它**没有**给出 1985 那个年份，而且说明了为什么那一行不相关。
    一句收束："**它宁可说没有，也不编。**"
 
 ## 第 2 幕 · fixture 原来在哪，被什么替换了（约 1 分钟）
 
-打开示例与自己的代码对照（提前开好两个窗口）：
+打开示例与自己的代码对照（提前开好两个窗口）。示例的**真实路径**是：
 
 ```
-..\..\dhg508-workspace-main\508-coursework\week-05\demo-building-app\server.py   第 20-30 行
+C:\Users\28301\Desktop\dhg508-workspace-main (1)\dhg508-workspace-main\508-coursework\week-05\demo-building-app\server.py
 ```
 
-念示例里那段：
+> 注意：路径里有 `dhg508-workspace-main (1)`（带空格和括号），下面还有一层同名目录，
+> 以及多一层 `508-coursework`。按上面这一行打开，别照旧文档里的短路径找。
+
+念示例第 20–30 行：
 
 ```python
 def ask_model(image: bytes) -> dict:
-    """THE ONE SPOT TO REPLACE. ... This demo does not call any model."""
+    """THE ONE SPOT TO REPLACE.
+    ...
+    This demo does not call any model. It returns the same saved answer for
+    every photo (fixtures/model-response.json), and says so ("source": "fixture").
+    """
     return json.loads(FIXTURE.read_text(encoding="utf-8"))
 ```
 
-- "示例自己写着 **It looks smart. It is a fixture.**——每张照片都是同一个答案，
-  页面上只有角落一个 `model: fixture` 徽章。**这是最容易翻车的地方**：
+- 它的 `README.md` 第 22 行就写着标题：**"It looks smart. It is a fixture."**
+  页面上的徽章是 `model: fixture`，提示条写着 *"This answer comes from a saved fixture,
+  not a model. Every photo gets the same answer."*
+- "示例自己写着 **THE ONE SPOT TO REPLACE**——每张照片都是同一个答案，
+  页面上只有角落一个小徽章。**这是最容易翻车的地方**：
   演示时断网、密钥过期，观众看不出来。"
-- 切到本项目 `app/model.py` 顶部：**同一个位置，现在是真调用**：
+- 切到本项目 `app/model.py` 顶部（第 1–20 行）：**同一个位置，现在是真调用**。
+  文件开头就写明：*This file is what replaced the demo's fixture.*
 
   ```
   POST https://api.deepseek.com/chat/completions
@@ -148,7 +181,7 @@ A：能，页面会亮黄条说明自己处于离线替身模式，并且只认 
 这正是我对示例那个 fixture 的批评：**用替身没关系，装成模型不行。**
 
 **Q：数据要怎么加？**
-A：`skills/mersey-clerk/maintenance.md`——新建 `..\code\data\events_03_*.json`，
+A：`skills/mersey-clerk/maintenance.md`——新建 `..\week3&4\code\data\events_03_*.json`，
 再跑 `build_db.py`、`validate_db.py`、`verify_sample.py`。数据库和应用都不用改：
 应用每次请求都重新只读打开卷宗，重建后刷新页面即可。
 
@@ -157,13 +190,19 @@ A：`skills/mersey-clerk/maintenance.md`——新建 `..\code\data\events_03_*.j
 ## 一页速查
 
 ```
-课前：  python code\set_key.py --verify   → 粘贴密钥（不回显），自动跑一次真调用验证
-        python code\check_app.py          → 通过 67 项，失败 0 项
-        python app\server.py              → 横幅写 deepseek-flash，开 http://localhost:8000
-演示：  ① 问「加州人号船长」→ 结论条 / 回答 / 依据表 / SQL / 页脚
-        ② 问「残骸哪一年发现」→ 0 行，拒答
+课前：  双击 启动网页.bat            → 自动读密钥、起服务器、就绪后开浏览器
+        核对横幅写 deepseek-flash    → 写 offline fixture 就是没读到密钥，当场修
+        python code\check_app.py     → 通过 67 项，失败 0 项
+        两道题先各点一次              → 答案先落袋，网络抖动也不怕
+演示：  ① 问「加州人号船长」→ 结论条(9 行) / 回答 / 依据表 / SQL / 页脚
+        ② 问「残骸哪一年发现」→ 0 行拒答（那 1 行与残骸无关，它自己说明）
         ③ 对照 demo-building-app/server.py 的 ask_model() → app/model.py 的真调用
         ④ skills\mersey-clerk\SKILL.md → 索引 + 三份文档 + reference
         ⑤ git log --oneline -8
-兜底：  $env:WEEK5_MODE="fixture" → 黄条自报替身，照样能讲
+兜底：  Ctrl+C 后  $env:WEEK5_MODE="fixture"  再 python app\server.py
+        → 黄条自报替身，照样能讲
+收尾：  在黑窗口按 Ctrl+C；窗口丢了就双击 停止网页.bat
 ```
+
+> 第 2 幕的示例路径在 `dhg508-workspace-main (1)\dhg508-workspace-main\508-coursework\week-05\demo-building-app\server.py`
+> —— 带 ` (1)`、两层同名目录、多一层 `508-coursework`，照这个开，别用旧短路径。
