@@ -75,7 +75,7 @@ def report() -> bool:
 
 
 # ---------------------------------------------------------------- 读入
-def read_key(explicit: str | None) -> str:
+def read_key(explicit) -> str:
     if explicit:
         print("  提醒：--key 会把密钥写进命令行历史，只建议自动化使用。")
         return explicit

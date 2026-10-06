@@ -65,6 +65,7 @@ python code\check_deepseek.py        # 用你的 key 发一次真实调用，确
 | `code/console_setup.py` | 小工具：管道捕获时输出 UTF-8，用户终端里保持控制台编码，两头都不乱码 |
 | `research/` | 应用设计、DeepSeek API 契约、自检记录、测试问题 |
 | `DEMO.md` | 课堂 5 分钟演示脚本（从 fixture 讲到真调用） |
+| `USAGE.md` | 使用说明：环境要求、设密钥、启动、页面怎么读、故障排查 |
 | `questions.md` | 本次仍未决的问题 |
 
 ## 与 Week 3 的关系
