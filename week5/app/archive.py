@@ -19,8 +19,24 @@ from pathlib import Path
 from urllib.parse import quote
 
 HERE = Path(__file__).resolve().parent
-# week5/app/archive.py -> week5 -> week3 root, where Week 3's database lives.
-DEFAULT_DB = HERE.parent.parent / "history.db"
+# Where Week 3's database may live, relative to week5/app/. The first hit wins,
+# so the archive is still found after the Week 3/4 coursework was moved into a
+# subfolder ("week3&4/"), and in the older flat layout too.
+DB_CANDIDATES = (
+    HERE.parent / "history.db",                       # week5/history.db
+    HERE.parent.parent / "week3&4" / "history.db",    # <root>/week3&4/history.db
+    HERE.parent.parent / "history.db",                # <root>/history.db (flat layout)
+)
+# Kept for compatibility: the first candidate, used when nothing is found.
+DEFAULT_DB = DB_CANDIDATES[0]
+
+
+def _default_db() -> Path:
+    """First existing candidate, else the preferred path (so errors name a real path)."""
+    for candidate in DB_CANDIDATES:
+        if candidate.is_file():
+            return candidate
+    return DEFAULT_DB
 
 MAX_ROWS = int(os.environ.get("WEEK5_MAX_ROWS", "60"))
 
@@ -41,7 +57,7 @@ class UnsafeQuery(ArchiveError):
 
 
 def db_path() -> Path:
-    return Path(os.environ.get("WEEK5_DB", DEFAULT_DB)).expanduser().resolve()
+    return Path(os.environ.get("WEEK5_DB") or _default_db()).expanduser().resolve()
 
 
 def connect(path=None) -> sqlite3.Connection:
