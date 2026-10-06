@@ -166,12 +166,27 @@ const EXAMPLES = [
 ];
 
 /* ---- mode band ---------------------------------------------------- */
+/* 这个页面必须由 app/server.py 提供。直接双击打开 HTML 属于 file:// 协议，
+   浏览器不允许它去连本地服务器，于是所有 fetch 都变成 Failed to fetch。
+   这种情况要一眼看懂，而不是甩一句英文报错。 */
+const OPENED_AS_FILE = location.protocol === "file:";
+const SERVER_HELP =
+  "这个页面的数据来自本地服务器，而你现在是直接双击打开的 HTML 文件（file:// 协议），" +
+  "浏览器不允许它以这种方式访问服务器。请先启动服务器，再打开 http://localhost:8000 ：\n\n" +
+  "    cd \"C:\\Users\\28301\\Desktop\\dhg508 week3\\week5\"\n" +
+  "    python app\\server.py\n";
+
 async function loadHealth() {
+  const band = $("band");
+  if (OPENED_AS_FILE) {
+    band.className = "band err";
+    $("bandText").textContent = SERVER_HELP.replace(/\n+/g, " ");
+    return;
+  }
   try {
     const res = await fetch("/api/health");
     const h = await res.json();
     if (h.error) throw new Error(h.error.message);
-    const band = $("band");
     if (h.mode === "deepseek") {
       band.className = "band";
       $("bandText").textContent =
@@ -183,8 +198,9 @@ async function loadHealth() {
         `而且只认识下面 5 道示例题。设置密钥后重启服务器即可自由提问。`;
     }
   } catch (err) {
-    $("band").className = "band err";
-    $("bandText").textContent = "读不到服务状态：" + err.message;
+    band.className = "band err";
+    $("bandText").textContent =
+      `读不到服务状态（${err.message}）。确认服务器还在跑：python app\\server.py`;
   }
 }
 
@@ -227,6 +243,7 @@ function stopWorking() {
 async function ask(question) {
   question = (question || "").trim();
   if (!question) { $("question").focus(); return; }
+  if (OPENED_AS_FILE) return showError(SERVER_HELP, null, "需要先启动服务器");
   startWorking();
   let data;
   try {
@@ -238,16 +255,17 @@ async function ask(question) {
     data = await res.json();
   } catch (err) {
     stopWorking();
-    return showError("连不上本地服务器：" + err.message, null);
+    return showError(SERVER_HELP + "\n（浏览器报的原话：" + err.message + "）", null,
+                     "连不上本地服务器");
   }
   stopWorking();
   if (data.error) return showError(data.error.message, data.error.hint || data.error.kind);
   render(data);
 }
 
-function showError(message, hint) {
+function showError(message, hint, title) {
   $("verdict").className = "verdict none";
-  $("verdict").textContent = "没有答成";
+  $("verdict").textContent = title || "没有答成";
   $("answer").textContent = message + (hint ? "\n\n提示：" + hint : "");
   $("cites").innerHTML = "";
   $("evidence").innerHTML = "";
