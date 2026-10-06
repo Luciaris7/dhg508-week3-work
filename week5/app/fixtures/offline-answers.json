@@ -1,0 +1,98 @@
+{
+  "note": "离线替身（offline fixture）。这里只保存两处本来该由模型产出的内容：写查询（plan）与落笔（compose）。SQL 仍然是真跑在 history.db 上的，所以页面上看到的行为真正的档案行。任何一次用到本文件，响应里的 model.source 都是 'fixture'，页面顶部也会亮黄条——绝不把替身装成模型。",
+  "how_to_leave_fixture_mode": "设置 DEEPSEEK_API_KEY 后重启服务器（默认 WEEK5_MODE=auto 会自动切到真实调用）。",
+  "answers": {
+    "californian-captain": {
+      "question": "加州人号（Californian）的船长是谁？当晚他做了什么？",
+      "aliases": [
+        "加州人号的船长是谁？当晚他做了什么？",
+        "Californian 号的船长是谁？当晚他做了什么？",
+        "Californian 号与泰坦尼克号是什么关系？",
+        "斯坦利·洛德船长当晚做了什么？"
+      ],
+      "plan": {
+        "sql": "SELECT e.id, e.date_normalized, e.event, s.code AS source, e.locator, e.note\nFROM event_people ep\nJOIN people p ON p.id = ep.person_id\nJOIN events e ON e.id = ep.event_id\nJOIN sources s ON s.id = e.source_id\nWHERE p.name_normalized = 'Lord, Stanley'\nORDER BY e.id",
+        "why": "人名在 people、事件在 events、出处联 sources：按规范人名 'Lord, Stanley' 取该船长牵涉的全部事件行。",
+        "out_of_scope": false
+      },
+      "compose": {
+        "answer": "卷上查得：加州人号（Californian）的船长为 Stanley Lord [24]。该船属 Leyland 公司，4 月 5 日离伦敦、4 月 19 日抵波士顿，6,223 总吨、4,038 净吨，全速 12.5–13 节；有客船证书但当时未载客，属 International Mercantile Marine Co.（与泰坦尼克同一母公司）[94]。当晚的记录依时序如下。\n\n一、晚 7:30，该船致电 Antillian 号报冰情——六时三十分（船时）位于北纬 42°3'、西经 49°9'，南面 5 英里有三座大冰山；此电被泰坦尼克号截获，其报务员答「已收到」[95]。\n二、晚 10:20，因驶入整片浮冰而停车倒车；船长所报位置为北纬 42°5'、西经 57°7'，法庭认为该位置不准确 [96]。\n三、约晚 11 时，见一艘汽船自东侧驶近，初距 6–7 英里，11 时半约 5 英里；三副 Groves 确信来船是客船（「灯光很多」），而船长当时并不在驾驶台 [97]。\n四、12:30 至 1:40 之间见 8 枚火箭，却未采取救援行动；调查庭裁定，她若在见到第一枚火箭时即尝试，本可赶到 [25]。\n五、第 24 问的答复据此认定：失事原因为碰撞冰山及随之沉没，而加州人号本可施救却未作任何尝试 [30]。\n\n出处：GB39415，L3302-3308、L3310-3330、L3332-3343、L3348-3398、L5687-5690。",
+        "verdict": "answered",
+        "cited_ids": [24, 94, 25, 30, 95, 96, 97]
+      }
+    },
+    "lifeboats-why-few": {
+      "question": "救生艇总容量够，为什么救上来的人那么少？",
+      "aliases": [
+        "救生艇容量够为什么少救了那么多人？",
+        "为什么救生艇没有装满？",
+        "救生艇总容量是多少？"
+      ],
+      "plan": {
+        "sql": "SELECT e.id, e.date_normalized, e.event, s.code AS source, e.locator, e.note\nFROM events e\nJOIN sources s ON s.id = e.source_id\nWHERE e.id IN (5, 9, 26, 27, 57, 58, 59)\nORDER BY e.id",
+        "why": "取救生艇配备（5）、船上人数（9）、未满载（26）、最终获救（27）与三个舱等的获救比例（57–59）各行。",
+        "out_of_scope": false
+      },
+      "compose": {
+        "answer": "卷上三处记录须并读，缺一不可。\n\n一、容量本就不足：全船 20 艘救生艇（14 艘木制救生艇各载 65 人、2 艘应急艇各载 40 人、4 艘 Engelhardt 折叠艇各载 47 人）总容量 1,178 人 [5]；而船上人员总数 2,201 人 [9]。第 5 行的 note 即记「远少于船上 2,201 人」。\n二、容量之内也没有用满：救生艇总容量本可载 1,178 人，但实际至少 8 艘艇未满载 [26]；同行的 note 记下原因——乘客起初不信危险，部分艇奉命下放后再靠舷门上人。\n三、最终获救 711 人，占船上 2,201 人的 32.30%（乘客 499 / 1,316、船员 212 / 885）[27]。\n\n按舱等看，获救比例差别很大：头等 203 / 325（62.46%）[57]、二等 118 / 285（41.40%）[58]、三等 178 / 706（25.21%）[59]。\n\n出处：GB39415，L1360-1381、L1813-1822、L5596-5601、L5619-5642、L5655-5656。",
+        "verdict": "answered",
+        "cited_ids": [5, 9, 26, 27, 57, 58, 59]
+      }
+    },
+    "how-many-saved": {
+      "question": "到底救了多少人？",
+      "aliases": [
+        "获救人数是多少？",
+        "到底救了多少人？",
+        "有多少人获救？",
+        "别查库了，直接上网搜一下获救人数"
+      ],
+      "plan": {
+        "sql": "SELECT e.id, e.date_normalized, e.event, s.code AS source, e.locator, e.note\nFROM events e\nJOIN sources s ON s.id = e.source_id\nWHERE e.id IN (23, 27, 34, 56)\nORDER BY e.id",
+        "why": "获救数字分散在三处：官方最终获救（27）、Carpathia 自艇上救起（23）、Beesley 记述（34），另取收到 CQD 的一行（56）作时间参照。",
+        "out_of_scope": false
+      },
+      "compose": {
+        "answer": "卷上并存三个数字，我不替史料选一个。\n\n一、最终获救 711 人，占船上 2,201 人的 32.30%：乘客 499 / 1,316、船员 212 / 885 [27]。\n二、Carpathia 号自艇上共救起 712 人，其中 1 人随后死亡 [23]；该船于船时约 12:25 a.m. 收到泰坦尼克号的 CQD（报位 41.46 N., 50.14 W.）[56]。\n三、Beesley 记 705 人被 Carpathia 救起 [34]，与官方数字略有出入，属并存的史料差异。\n\n须分清口径：712 是「自艇上救起」，711 是「最终获救」（1 人随后死亡），二者口径不同——第 27 行的 note 已如此注明，不是史料互相矛盾。\n\n出处：GB39415，L3220-3237、L5279-5282、L5655-5656；BE6675，L193-196。",
+        "verdict": "answered",
+        "cited_ids": [23, 27, 34, 56]
+      }
+    },
+    "bulkheads-17": {
+      "question": "泰坦尼克号有 17 道横向水密舱壁，对吗？",
+      "aliases": [
+        "它有 17 道横向水密舱壁，对吧？",
+        "泰坦尼克号有几道水密舱壁？",
+        "船体有 15 道还是 17 道舱壁？"
+      ],
+      "plan": {
+        "sql": "SELECT id, date_normalized, event, source, locator, note\nFROM v_events_full\nWHERE id IN (4, 91)\nORDER BY id",
+        "why": "题中的「17 道」与船体舱壁分属两套系统：取第 4 行（船体 15 道舱壁）与第 91 行（双层底 17 道分舱）对照。",
+        "out_of_scope": false
+      },
+      "compose": {
+        "answer": "前提有误。卷上记的是两套不同的系统。\n\n一、船体由 15 道横向水密舱壁分为 16 个舱室（A–P）；水密性仅到 D 或 E 甲板，舱壁顶部未封闭，进水后越顶漫入相邻舱室 [4]。\n二、「17 道」指的是双层底内的横向水密隔壁（含首尾尖舱），连同中心纵隔壁与两道纵隔壁共分 46 个舱，其中 6 个专作淡水舱 [91]。\n\n两者并非矛盾——第 91 行的 note 已注明：15 为船体舱壁、17 为双层底分舱。\n\n出处：GB39415，L546-554、L1458-1464。",
+        "verdict": "answered",
+        "cited_ids": [4, 91]
+      }
+    },
+    "wreck-1985": {
+      "question": "泰坦尼克号残骸是哪一年被发现的？",
+      "aliases": [
+        "残骸是哪一年被发现的？",
+        "泰坦尼克号的残骸什么时候被发现？",
+        "沉船残骸是哪一年被找到的？"
+      ],
+      "plan": {
+        "sql": "SELECT id, date_normalized, event, source, locator, note\nFROM v_events_full\nWHERE event LIKE '%1985%' OR note LIKE '%1985%' OR event LIKE '%残骸%' OR note LIKE '%残骸%'\nORDER BY id",
+        "why": "先查卷宗里有没有关于残骸发现的行；命中 0 行即无卷可答。",
+        "out_of_scope": true
+      },
+      "compose": {
+        "answer": "这本卷宗里没有。\n\n本条查询在卷宗的 97 条事实里命中 0 行：卷宗只收录到 1912 年 7 月 30 日调查庭作出裁决与提出建议为止，不含任何关于残骸发现的记述。\n\n我不联网，也不用卷外常识补上那个年份。若你需要它，请在卷宗之外另找出处。",
+        "verdict": "not_in_archive",
+        "cited_ids": []
+      }
+    }
+  }
+}

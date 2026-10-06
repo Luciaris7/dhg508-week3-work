@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>向卷宗提问 · The Mersey Clerk</title>
+<style>
+  :root {
+    --paper:#f4f1e8; --card:#fbf9f3; --ink:#15181e; --soft:#6a6659; --rule:#d9d3c5;
+    --navy:#1b2a41; --navy-soft:#e6eaf0; --brass:#8f6f2a; --brass-soft:#f5ecd7;
+    --seal:#8c2f2a; --seal-soft:#f6e6e3; --ok:#2f5d46;
+    --serif:"Songti SC","Noto Serif SC","Iowan Old Style",Georgia,serif;
+    --sans:"Avenir Next","PingFang SC","Helvetica Neue",system-ui,sans-serif;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16.5px/1.65 var(--sans)}
+  .wrap{max-width:1020px;margin:0 auto;padding:40px 28px 60px}
+  a{color:var(--navy)}
+
+  header.top{border-bottom:2px solid var(--navy);padding-bottom:18px}
+  .kicker{font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--soft)}
+  h1{font-family:var(--serif);font-size:42px;line-height:1.12;margin:10px 0 6px;letter-spacing:-.4px}
+  h1 span{color:var(--navy)}
+  .lede{color:var(--soft);margin:0;max-width:44em}
+
+  /* mode band */
+  .band{display:flex;gap:12px;align-items:baseline;margin-top:20px;padding:12px 16px;border-radius:10px;
+        font-size:14.5px;background:var(--navy-soft);color:var(--navy)}
+  .band b{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
+  .band.warn{background:var(--brass-soft);color:var(--brass)}
+  .band.err{background:var(--seal-soft);color:var(--seal)}
+
+  /* ask */
+  form.ask{margin-top:22px}
+  textarea{width:100%;min-height:96px;resize:vertical;padding:16px 18px;border:1px solid var(--rule);
+           border-radius:12px;background:var(--card);color:var(--ink);font:17px/1.6 var(--serif)}
+  textarea:focus{outline:2px solid var(--navy);outline-offset:1px}
+  .row{display:flex;gap:12px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  button.go{appearance:none;border:0;border-radius:999px;background:var(--navy);color:#fff;
+            font:600 16px var(--sans);padding:13px 28px;cursor:pointer}
+  button.go:hover{background:#132033}
+  button.go:disabled{opacity:.45;cursor:default}
+  .hint{color:var(--soft);font-size:13.5px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .chip{appearance:none;border:1px solid var(--rule);background:var(--card);color:var(--ink);
+        border-radius:999px;padding:7px 14px;font:14px var(--sans);cursor:pointer}
+  .chip:hover{border-color:var(--navy);background:#fff}
+
+  /* working */
+  .working{display:none;margin-top:26px;padding:18px 20px;border:1px dashed var(--rule);
+           border-radius:12px;color:var(--soft);font-size:15px}
+  .working.on{display:block}
+  .dots::after{content:"";animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:""}25%{content:"·"}50%{content:"··"}75%{content:"···"}}
+
+  /* result */
+  .result{display:none;margin-top:28px;animation:rise .4s ease-out}
+  .result.on{display:block}
+  @keyframes rise{from{opacity:0;transform:translateY(10px)}}
+  .verdict{font-family:var(--serif);font-size:15px;letter-spacing:.02em;padding:11px 16px;border-radius:10px;
+           background:var(--navy-soft);color:var(--navy);border-left:4px solid var(--navy)}
+  .verdict.none{background:var(--seal-soft);color:var(--seal);border-left-color:var(--seal)}
+  .verdict.warn{background:var(--brass-soft);color:var(--brass);border-left-color:var(--brass)}
+
+  .answer{margin-top:18px;font-family:var(--serif);font-size:19px;line-height:1.85;white-space:pre-wrap}
+  .cites{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}
+  .cite{font:13px var(--mono);background:#fff;border:1px solid var(--rule);border-radius:6px;padding:3px 9px;color:var(--navy)}
+  .cite.bad{border-color:var(--seal);color:var(--seal)}
+
+  h2{font-family:var(--serif);font-size:15px;letter-spacing:.16em;text-transform:uppercase;
+     color:var(--soft);margin:34px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+  table.ledger{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--rule);
+               border-radius:10px;overflow:hidden;font-size:14.5px}
+  table.ledger th,table.ledger td{text-align:left;vertical-align:top;padding:11px 13px;border-bottom:1px solid var(--rule)}
+  table.ledger th{font:11.5px var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--soft);
+                  background:#efeade;font-weight:600}
+  table.ledger tr:last-child td{border-bottom:0}
+  table.ledger td.id{font:13px var(--mono);color:var(--navy);white-space:nowrap}
+  table.ledger td.src{font:12.5px var(--mono);color:var(--soft);white-space:nowrap}
+  table.ledger td.note{color:var(--brass);font-size:13.5px}
+  .empty{padding:16px 18px;border:1px dashed var(--rule);border-radius:10px;color:var(--soft);font-size:14.5px}
+
+  details{margin-top:14px;border:1px solid var(--rule);border-radius:10px;background:var(--card);padding:0 16px}
+  details[open]{padding-bottom:14px}
+  summary{cursor:pointer;padding:13px 0;font:600 14.5px var(--sans);color:var(--navy)}
+  pre{background:#1b2a41;color:#eef1f5;padding:14px 16px;border-radius:9px;overflow:auto;
+      font:12.8px/1.6 var(--mono);margin:6px 0 0}
+  pre.light{background:#efeade;color:var(--ink)}
+  .meta{margin-top:20px;font:13px var(--mono);color:var(--soft);display:flex;gap:16px;flex-wrap:wrap}
+
+  footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--rule);color:var(--soft);font-size:13px;
+         display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+  @media (max-width:660px){
+    .wrap{padding:26px 16px 44px}
+    h1{font-size:30px}
+    .answer{font-size:17.5px}
+    table.ledger{font-size:13.5px}
+    table.ledger thead{display:none}
+    table.ledger tr{display:block;border-bottom:1px solid var(--rule);padding:10px 12px}
+    table.ledger td{display:block;border:0;padding:2px 0}
+    table.ledger td::before{content:attr(data-label) " ";color:var(--soft);font-size:11px;
+                            letter-spacing:.1em;text-transform:uppercase}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">DHG508 · Week 5 · history.db</div>
+    <h1>向<span>卷宗</span>提问</h1>
+    <p class="lede">写下你的问题。服务器会让模型写出一条查询、真的去 1912 年调查卷宗里查，
+      再由书记官依<strong>查到的行</strong>作答——每句都带行号，查不到就说查不到。
+      页面下方会给出实际执行的 SQL 与作为依据的那些行，供你核对。</p>
+  </header>
+
+  <div class="band" id="band"><b>状态</b><span id="bandText">正在读取服务状态…</span></div>
+
+  <form class="ask" id="form">
+    <textarea id="question" placeholder="例如：加州人号的船长是谁？当晚他做了什么？" maxlength="500"></textarea>
+    <div class="row">
+      <button class="go" id="go" type="submit">呈上问题</button>
+      <span class="hint" id="hint">Ctrl + Enter 也可提交</span>
+    </div>
+    <div class="chips" id="chips"></div>
+  </form>
+
+  <div class="working" id="working"><span class="dots" id="workingText"></span></div>
+
+  <section class="result" id="result">
+    <div class="verdict" id="verdict"></div>
+    <div class="answer" id="answer"></div>
+    <div class="cites" id="cites"></div>
+
+    <h2>依据（查询返回的行）</h2>
+    <div id="evidence"></div>
+
+    <h2>检索过程</h2>
+    <details id="planBox">
+      <summary>模型写的查询与本页的说明</summary>
+      <p class="hint" id="why"></p>
+      <pre id="sql"></pre>
+    </details>
+
+    <div class="meta" id="meta"></div>
+  </section>
+
+  <footer>
+    <span>浏览器 → app/server.py → DeepSeek → history.db（只读）</span>
+    <span>DHG508 · Week 5</span>
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const EXAMPLES = [
+  "加州人号（Californian）的船长是谁？当晚他做了什么？",
+  "救生艇总容量够，为什么救上来的人那么少？",
+  "到底救了多少人？",
+  "泰坦尼克号有 17 道横向水密舱壁，对吗？",
+  "泰坦尼克号残骸是哪一年被发现的？",
+];
+
+/* ---- mode band ---------------------------------------------------- */
+async function loadHealth() {
+  try {
+    const res = await fetch("/api/health");
+    const h = await res.json();
+    if (h.error) throw new Error(h.error.message);
+    const band = $("band");
+    if (h.mode === "deepseek") {
+      band.className = "band";
+      $("bandText").textContent =
+        `真实模型调用已就绪：${h.model} · 卷宗 ${h.rows.total} 行 · ${h.database}`;
+    } else {
+      band.className = "band warn";
+      $("bandText").textContent =
+        `离线替身模式：没有找到 DEEPSEEK_API_KEY，回答来自预设答案（不是模型），` +
+        `而且只认识下面 5 道示例题。设置密钥后重启服务器即可自由提问。`;
+    }
+  } catch (err) {
+    $("band").className = "band err";
+    $("bandText").textContent = "读不到服务状态：" + err.message;
+  }
+}
+
+/* ---- chips -------------------------------------------------------- */
+EXAMPLES.forEach(q => {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "chip";
+  b.textContent = q.length > 26 ? q.slice(0, 25) + "…" : q;
+  b.title = q;
+  b.onclick = () => { $("question").value = q; $("question").focus(); };
+  $("chips").appendChild(b);
+});
+
+/* ---- submit ------------------------------------------------------- */
+$("form").onsubmit = e => { e.preventDefault(); ask($("question").value); };
+$("question").onkeydown = e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); ask($("question").value); }
+};
+
+let steps = 0, timer = null;
+function startWorking() {
+  steps = 0;
+  $("result").classList.remove("on");
+  $("working").classList.add("on");
+  $("go").disabled = true;
+  const say = ["正在让模型写出查询…", "正在卷宗里检索…", "正在依查到的行落笔…", "快好了…"];
+  $("workingText").textContent = say[0];
+  timer = setInterval(() => {
+    steps = Math.min(steps + 1, say.length - 1);
+    $("workingText").textContent = say[steps];
+  }, 2600);
+}
+function stopWorking() {
+  clearInterval(timer);
+  $("working").classList.remove("on");
+  $("go").disabled = false;
+}
+
+async function ask(question) {
+  question = (question || "").trim();
+  if (!question) { $("question").focus(); return; }
+  startWorking();
+  let data;
+  try {
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+    data = await res.json();
+  } catch (err) {
+    stopWorking();
+    return showError("连不上本地服务器：" + err.message, null);
+  }
+  stopWorking();
+  if (data.error) return showError(data.error.message, data.error.hint || data.error.kind);
+  render(data);
+}
+
+function showError(message, hint) {
+  $("verdict").className = "verdict none";
+  $("verdict").textContent = "没有答成";
+  $("answer").textContent = message + (hint ? "\n\n提示：" + hint : "");
+  $("cites").innerHTML = "";
+  $("evidence").innerHTML = "";
+  $("planBox").open = false;
+  $("why").textContent = ""; $("sql").textContent = "";
+  $("meta").innerHTML = "";
+  $("result").classList.add("on");
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function render(d) {
+  const count = d.result.returned;
+  const none = d.answer.verdict === "not_in_archive" || count === 0;
+
+  if (none) {
+    $("verdict").className = "verdict none";
+    $("verdict").textContent = "这本卷宗里没有 — 查询命中 0 行，书记官依规矩不作答。";
+  } else {
+    $("verdict").className = "verdict";
+    $("verdict").textContent = `卷宗有此记载 — 查得 ${count} 行，回答仅依这些行。`;
+  }
+  if (d.citation_check && !d.citation_check.ok) {
+    $("verdict").className = "verdict warn";
+    $("verdict").textContent += ` ⚠ 引证核对未通过：回答引用了未返回的行号 ${d.citation_check.stray.join(", ")}。`;
+  }
+
+  $("answer").textContent = d.answer.text || "（模型没有给出内容）";
+
+  const cites = $("cites"); cites.innerHTML = "";
+  const stray = new Set((d.citation_check && d.citation_check.stray) || []);
+  (d.answer.cited_ids || []).forEach(id => {
+    const s = document.createElement("span");
+    s.className = "cite" + (stray.has(id) ? " bad" : "");
+    s.textContent = "[" + id + "]";
+    cites.appendChild(s);
+  });
+  if (!(d.answer.cited_ids || []).length) {
+    const s = document.createElement("span");
+    s.className = "hint";
+    s.textContent = "（本次回答没有引用任何行号）";
+    cites.appendChild(s);
+  }
+
+  const box = $("evidence"); box.innerHTML = "";
+  if (!count) {
+    const p = document.createElement("div");
+    p.className = "empty";
+    p.textContent = d.plan.out_of_scope
+      ? "模型判定此问题不在卷宗范围内，返回的查询命中 0 行。"
+      : "查询命中 0 行。";
+    box.appendChild(p);
+  } else {
+    box.appendChild(ledger(d.result.rows));
+  }
+
+  $("why").textContent = "检索说明：" + (d.plan.why || "（模型未给出说明）");
+  $("sql").textContent = d.result.sql || d.plan.sql || "（没有执行查询）";
+
+  const m = d.model;
+  $("meta").innerHTML = "";
+  const bits = [
+    m.source === "deepseek" ? `model ${m.model_reported || m.name}` : `⚠ ${m.name}`,
+    `调用 ${m.calls} 次`,
+    m.seconds_total ? `耗时 ${m.seconds_total}s` : null,
+    m.usage && m.usage.total_tokens ? `tokens ${m.usage.total_tokens}` : null,
+    `返回 ${count} 行${d.result.truncated ? "（已截断）" : ""}`,
+  ].filter(Boolean);
+  bits.forEach(t => { const s = document.createElement("span"); s.textContent = t; $("meta").appendChild(s); });
+
+  $("planBox").open = false;
+  $("result").classList.add("on");
+  $("result").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function ledger(rows) {
+  const cols = ["id", "date_normalized", "source", "locator", "event", "note"];
+  const labels = { id: "行号", date_normalized: "日期", source: "文献", locator: "位置", event: "事实", note: "存疑" };
+  const table = document.createElement("table");
+  table.className = "ledger";
+  const thead = document.createElement("thead");
+  const hr = document.createElement("tr");
+  cols.forEach(c => { const th = document.createElement("th"); th.textContent = labels[c]; hr.appendChild(th); });
+  thead.appendChild(hr); table.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    cols.forEach(c => {
+      const td = document.createElement("td");
+      td.dataset.label = labels[c];
+      if (c === "id") td.className = "id";
+      else if (c === "source" || c === "locator") td.className = "src";
+      else if (c === "note") td.className = "note";
+      let v = r[c];
+      if (c === "date_normalized") v = r.date_normalized || r.date || "";
+      td.textContent = (v === null || v === undefined || v === "") ? "—" : String(v);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  return table;
+}
+
+loadHealth();
+</script>
+</body>
+</html>
