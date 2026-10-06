@@ -3,15 +3,15 @@
 > Week 3 的 `questions.md` 讨论的是史料本身，未作改动，仍在 `..\questions.md`。
 > 这份记 Week 5 新增、且我这一轮没有解决的问题。
 
-## 1. 真实 API 往返尚未在本机跑过（首要）
+## 1. 有效密钥那一次调用还没跑（首要）
 
-这台机器上没有 `DEEPSEEK_API_KEY`，所以"服务器真的接受这条请求并回话"这一步**没有被验证**。
-已经验证到的是：报文形状逐字段符合官方文档（`code/check_app.py` F 段 18 项）、
-密钥缺失时明确失败而不是降级、两步流水线与守卫/引证核对全部用真数据跑通（A–E 段）。
+本机没有 DeepSeek **平台**密钥（`.credentials.yaml` 里只有 DSH 自己的账号凭据，不是 `sk-` 密钥）。
+不过真请求已经打过一次：用伪造密钥得到 **401**，服务端回显了密钥末四位，
+说明**域名、路径、请求体、鉴权头、错误映射全部正确**（细节见 `research/verification.md`）。
 
-**待办**：在持有密钥的机器上跑
-`python code\check_deepseek.py --ask "到底救了多少人？"`，
-把输出贴回 `research/verification.md`，并补齐 `research/test-questions.md` 第 6–12 题。
+**缺的只有**："有效密钥 → 200 → 正常的两步问答"这一次。
+待办：跑 `python code\set_key.py --verify`，把输出贴回 `research/verification.md`，
+并补齐 `research/test-questions.md` 第 6–12 题。
 
 ## 2. 检索层失败没有兜底
 

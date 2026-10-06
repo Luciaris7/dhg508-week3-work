@@ -8,12 +8,16 @@
 ## 课前 2 分钟
 
 ```powershell
+chcp 65001                          # 中文乱码时才需要（PowerShell 5.1 默认 cp936）
 cd "C:\Users\28301\Desktop\dhg508 week3\week5"
 
+python code\set_key.py --verify     # 粘贴密钥（不回显）→ 存进环境变量 → 立刻真调用验证一次
 python code\check_app.py            # 应打印「通过 67 项，失败 0 项」
-$env:DEEPSEEK_API_KEY = "sk-..."    # 只放在环境变量里
 python app\server.py                # 横幅应写 model deepseek-flash
 ```
+
+`set_key.py --verify` 跑通就说明第 ① 条"答一个**真**请求"已经成立；
+它失败时会明确告诉你是 401（抄错）还是 402（余额不足）。
 
 横幅是第一个卖点，念出来：
 
@@ -26,6 +30,7 @@ python app\server.py                # 横幅应写 model deepseek-flash
 **掉链子预案**：网络不通就把 `$env:WEEK5_MODE` 设成 `fixture` 重开，
 页面会亮黄条明说"回答来自预设答案，不是模型"——**念出来，这本身就是演示内容**。
 断网时真正能救场的正是那条黄条：它证明这个应用不会假装。
+（`WEEK5_MODE=fixture` 需在**同一个窗口**里设，再启动服务器。）
 
 ---
 

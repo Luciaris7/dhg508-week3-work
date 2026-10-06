@@ -26,11 +26,15 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 APP = HERE.parent / "app"
+sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(APP))
 
-import archive        # noqa: E402
-import clerk          # noqa: E402
-import model          # noqa: E402
+import console_setup    # noqa: E402
+import archive          # noqa: E402
+import clerk            # noqa: E402
+import model            # noqa: E402
+
+console_setup.setup()
 
 PASS, FAIL = [], []
 

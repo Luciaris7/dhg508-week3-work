@@ -15,13 +15,20 @@
 Test-Path ..\history.db          # True
 python --version                 # Python 3，只要标准库，无需 pip install
 
-# 2) 注册一个 DeepSeek API key（https://platform.deepseek.com/api_keys），只放在环境变量里
+# 2) 注册一个 DeepSeek API key（https://platform.deepseek.com/api_keys），只放在环境变量里。
+#    用向导最省事：提示你粘贴（不回显），存进用户环境变量，然后立刻用一次真调用验证。
+python code\set_key.py --verify
+```
+
+不想用向导就自己设（注意 `setx` 会把密钥留在命令行历史里）：
+
+```powershell
 $env:DEEPSEEK_API_KEY = "sk-xxxxxxxx"      # 仅当前窗口有效
-# 或者长期保存在用户环境变量里（新开窗口生效）：
-setx DEEPSEEK_API_KEY "sk-xxxxxxxx"
+setx DEEPSEEK_API_KEY "sk-xxxxxxxx"        # 存进用户环境变量，新开窗口生效
 ```
 
 密钥**只从环境变量读**，代码里没有任何地方写 key，也没有 `.env` 文件——见 [`app/model.py`](app/model.py)。
+随时可以查现状：`python code\set_key.py --check`。
 
 ## 跑起来
 
@@ -54,6 +61,8 @@ python code\check_deepseek.py        # 用你的 key 发一次真实调用，确
 | `skills/mersey-registrar/` | 只指向 clerk 的 `maintenance.md`，不再重复内容 |
 | `code/check_app.py` | 不联网的自检（含只读与守卫的反证） |
 | `code/check_deepseek.py` | 用真 key 发一次真调用 |
+| `code/set_key.py` | 把密钥放进环境变量的向导（不回显、不落盘、可只验证一次） |
+| `code/console_setup.py` | 小工具：管道捕获时输出 UTF-8，用户终端里保持控制台编码，两头都不乱码 |
 | `research/` | 应用设计、DeepSeek API 契约、自检记录、测试问题 |
 | `DEMO.md` | 课堂 5 分钟演示脚本（从 fixture 讲到真调用） |
 | `questions.md` | 本次仍未决的问题 |
