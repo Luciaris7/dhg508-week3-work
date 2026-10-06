@@ -157,9 +157,9 @@ A：`skills/mersey-clerk/maintenance.md`——新建 `..\code\data\events_03_*.j
 ## 一页速查
 
 ```
-课前：  python code\check_app.py        → 通过 67 项，失败 0 项
-        $env:DEEPSEEK_API_KEY="sk-..."
-        python app\server.py            → 横幅写 deepseek-flash，开 http://localhost:8000
+课前：  python code\set_key.py --verify   → 粘贴密钥（不回显），自动跑一次真调用验证
+        python code\check_app.py          → 通过 67 项，失败 0 项
+        python app\server.py              → 横幅写 deepseek-flash，开 http://localhost:8000
 演示：  ① 问「加州人号船长」→ 结论条 / 回答 / 依据表 / SQL / 页脚
         ② 问「残骸哪一年发现」→ 0 行，拒答
         ③ 对照 demo-building-app/server.py 的 ask_model() → app/model.py 的真调用
